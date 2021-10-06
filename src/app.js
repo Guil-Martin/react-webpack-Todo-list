@@ -36,9 +36,20 @@ const App = (props) => {
 	const [idToEdit, setIdToEdit] = useState();
 	
 	const handleAdd = (value) => {
-		if (value !== "") {
+		if (value != "") {
+
+			// Set priority for how many ! are added at the start of the string, they remove them
+			let PriorityMarkCounter = 0
+			for (let i = 0; i < 3; i++) { if (value[i] === '!') { PriorityMarkCounter+=1 } }
+			value = value.substring(PriorityMarkCounter);
+
 			const currentDate = new Date()
-			const newItem = { id: currentDate.getTime().toString(), title: value, priority: "lowest", color:'#81c784', date: currentDate};
+			const newItem = { id: currentDate.getTime().toString(), 
+												title: value, 
+												priority: colorPriority[PriorityMarkCounter].priority,
+												color: colorPriority[PriorityMarkCounter].color, 
+												date: currentDate };
+
 			setTodoList([...todoList, newItem]);
 			textFieldTodo.current.value = '';
 			textFieldTodo.current.focus();
@@ -54,18 +65,10 @@ const App = (props) => {
 	}
 
 	const handlePriority = (item) => {
-		if (item.priority === 'lowest') {
-			item.priority = 'low';
-		} else if (item.priority === 'low') {
-			item.priority = 'medium';
-		} else if (item.priority === 'medium') {
-			item.priority = 'high';
-		} else {
-			item.priority = 'lowest';
-		}
-
-		item.color = colorPriority.find(x => x.priority === item.priority).color;
-		// To force an rerender
+		let colorState = colorPriority.findIndex(x => x.priority === item.priority);
+		colorState = colorState > 2 ? 0 : colorState + 1;
+		item.priority = colorPriority[colorState].priority;
+		item.color = colorPriority[colorState].color;
 		setRerender(!rerender);
 	}
 
@@ -105,10 +108,7 @@ const App = (props) => {
 						id="outlined-basic" 
 						label="ToDo" 
 						inputRef={ textFieldTodo }
-						onKeyPress={(e) => {
-							console.log(`Pressed keyCode ${e.key}`);
-							if (e.key === 'Enter') { handleAdd(inputValue); }
-						}}
+						onKeyPress={(e) => { if (e.key === 'Enter') { handleAdd(inputValue); } }}
 						onChange={(e) => { setInputValue(e.currentTarget.value) }} />
 
 						<Button variant="contained" style={ {width:'20%', height:'100%',} }
@@ -137,7 +137,7 @@ const App = (props) => {
 										</Typography>
 
 										<Typography sx={{ mb: 1.5 }} style={{color:'#81c784'}}>
-											Date: { item.date.getFullYear() + " / " +  item.date.getDate() + " / " +  item.date.getMonth() + " at " +  item.date.getHours() + "H" +  item.date.getMinutes()  }
+											Date: { item.date.getFullYear() + "/" +  item.date.getDate() + "/" +  item.date.getMonth() + " at " +  item.date.getHours() + "H" +  item.date.getMinutes()  }
 										</Typography>
 									</CardContent>
 
