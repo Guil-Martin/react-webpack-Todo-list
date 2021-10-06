@@ -1,17 +1,33 @@
 import React, { useState, useRef } from 'react';
 import { render } from "react-dom"
 import {
-	Container, Grid,
+	Container, Grid, Typography,
 	Button,
+	IconButton,
 	ButtonGroup,
 	TextField,
+	Card,
+	CardActions,
+	CardContent,
 } from '@material-ui/core';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/BorderColor';
+import PriorityIcon from '@mui/icons-material/DateRange';
 
 import './style.scss';
+
+const colorPriority = [
+	{priority: 'lowest', color: '#81c784'}, 
+	{priority: 'low', color: '#4fc3f7'}, 
+	{priority: 'medium', color: '#ffb74d'}, 
+	{priority: 'high', color: '#e57373'}
+]
 
 const App = (props) => {
 		
 	const textFieldTodo = useRef(null);
+
+	const [rerender, setRerender] = useState(false);
 	
 	const [inputValue, setInputValue] = useState();
 	const [todoList, setTodoList] = useState([]);
@@ -21,7 +37,8 @@ const App = (props) => {
 	
 	const handleAdd = (value) => {
 		if (value !== "") {
-			const newItem = { id: new Date().getTime().toString(), title: value };
+			const currentDate = new Date()
+			const newItem = { id: currentDate.getTime().toString(), title: value, priority: "lowest", color:'#81c784', date: currentDate};
 			setTodoList([...todoList, newItem]);
 			textFieldTodo.current.value = '';
 			textFieldTodo.current.focus();
@@ -36,6 +53,22 @@ const App = (props) => {
 		textFieldTodo.current.focus();
 	}
 
+	const handlePriority = (item) => {
+		if (item.priority === 'lowest') {
+			item.priority = 'low';
+		} else if (item.priority === 'low') {
+			item.priority = 'medium';
+		} else if (item.priority === 'medium') {
+			item.priority = 'high';
+		} else {
+			item.priority = 'lowest';
+		}
+
+		item.color = colorPriority.find(x => x.priority === item.priority).color;
+		// To force an rerender
+		setRerender(!rerender);
+	}
+
 	return (
 		<Container>
 
@@ -46,11 +79,11 @@ const App = (props) => {
 					{ isEditing ?
 					
 					<>
-						<TextField id="textField" style={ { width:'80%', height:50, } }
-							id="outlined-basic" label= {idToEdit + " - Edit ToDo"} variant="outlined"
+						<TextField style={ { width:'80%', height:50, } } variant="outlined"
+							id="outlined-basic" 
+							label= {idToEdit + " - Edit ToDo"} 
 							inputRef={ textFieldTodo }
 							onKeyPress={(e) => {
-								console.log(`Pressed keyCode ${e.key}`);
 								if (e.key === 'Enter') { 
 									handleEdit(inputValue);
 									e.currentTarget.value = '';
@@ -68,8 +101,9 @@ const App = (props) => {
 					:
 
 					<>
-						<TextField style={ { width:'80%', height:50, } }
-						id="outlined-basic" label="ToDo" variant="outlined"
+						<TextField style={ { width:'80%', height:50, } } variant="outlined"
+						id="outlined-basic" 
+						label="ToDo" 
 						inputRef={ textFieldTodo }
 						onKeyPress={(e) => {
 							console.log(`Pressed keyCode ${e.key}`);
@@ -92,28 +126,50 @@ const App = (props) => {
 
 						{ todoList.map((item) => (
 							<Grid item xs={4}>
-								<div>{ item.title }</div>
-								<div>{ item.id }</div>
-								<ButtonGroup id={item.id} variant="contained" aria-label="outlined primary button group">
+								<Card sx={{ minWidth: 275 }}>
 
-									<Button onClick={(e) => {
-										setIsEditing(true);
-										setIdToEdit(e.currentTarget.parentNode.id);
-										textFieldTodo.current.focus();
-									}}>
-										Modify
-									</Button>
+									<CardContent>
+										<Typography sx={{ fontSize: 14 }} style={{color:'#42a5f5'}} gutterBottom>
+											Todo num: { item.id }
+										</Typography>
+										<Typography variant="h5" component="div">
+											{ item.title }
+										</Typography>
 
-									<Button onClick={(e) => {
-										setTodoList(todoList.filter((it) => it.id !== item.id));
-									}}>
-										Delete
-									</Button>
+										<Typography sx={{ mb: 1.5 }} style={{color:'#81c784'}}>
+											Date: { item.date.getFullYear() + " / " +  item.date.getDate() + " / " +  item.date.getMonth() + " at " +  item.date.getHours() + "H" +  item.date.getMinutes()  }
+										</Typography>
+									</CardContent>
 
-								</ButtonGroup>
+									<CardActions disableSpacing>
+										<IconButton aria-label="Edit" style={{color:'#ffb74d'}} onClick={(e) => {
+											setIsEditing(true);
+											setIdToEdit(item.id);
+											textFieldTodo.current.focus();
+										}}>
+											<EditIcon />
+										</IconButton>
+
+										<IconButton aria-label="Delete" style={{color:'#d32f2f'}} onClick={(e) => {
+												setTodoList(todoList.filter((it) => it.id !== item.id));
+											}}>
+											<DeleteIcon />
+										</IconButton>
+										
+										<IconButton aria-label="Priority" style={{backgroundColor: item.color}} onClick={(e) => {
+												handlePriority(item);
+											}}>
+											<PriorityIcon /> 
+											<Typography sx={{ mb: 1.5 }}>
+												{ item.priority.toUpperCase() }
+											</Typography>
+										</IconButton>
+									</CardActions>
+
+								</Card>
 							</Grid>
-						)) }
-						
+						))}
+
 					</Grid>
 					
 				</Grid>
