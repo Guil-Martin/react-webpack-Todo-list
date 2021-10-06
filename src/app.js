@@ -41,7 +41,7 @@ const App = (props) => {
 			// Set priority for how many ! are added at the start of the string, they remove them
 			let PriorityMarkCounter = 0
 			for (let i = 0; i < 3; i++) { if (value[i] === '!') { PriorityMarkCounter+=1 } }
-			value = value.substring(PriorityMarkCounter);
+			value = value.substring(PriorityMarkCounter).trim();
 
 			const currentDate = new Date()
 			const newItem = { id: currentDate.getTime().toString(), 
@@ -66,7 +66,7 @@ const App = (props) => {
 
 	const handlePriority = (item) => {
 		let colorState = colorPriority.findIndex(x => x.priority === item.priority);
-		colorState = colorState > 2 ? 0 : colorState + 1;
+		colorState = colorState > (colorPriority.length - 2) ? 0 : colorState + 1;
 		item.priority = colorPriority[colorState].priority;
 		item.color = colorPriority[colorState].color;
 		setRerender(!rerender);
@@ -129,15 +129,15 @@ const App = (props) => {
 								<Card sx={{ minWidth: 275 }}>
 
 									<CardContent>
-										<Typography sx={{ fontSize: 14 }} style={{color:'#42a5f5'}} gutterBottom>
+										{/* <Typography sx={{ fontSize: 14 }} style={{color:'#42a5f5'}} gutterBottom>
 											Todo num: { item.id }
-										</Typography>
+										</Typography> */}
 										<Typography variant="h5" component="div">
 											{ item.title }
 										</Typography>
 
 										<Typography sx={{ mb: 1.5 }} style={{color:'#81c784'}}>
-											Date: { item.date.getFullYear() + "/" +  item.date.getDate() + "/" +  item.date.getMonth() + " at " +  item.date.getHours() + "H" +  item.date.getMinutes()  }
+											Published: { item.date.getFullYear() + "/" +  item.date.getDate() + "/" +  item.date.getMonth() + " at " +  item.date.getHours() + "H" +  item.date.getMinutes()  }
 										</Typography>
 									</CardContent>
 
