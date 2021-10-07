@@ -1,183 +1,237 @@
-import React, { useState, useRef } from 'react';
-import { render } from "react-dom"
+import React, { useState, useRef } from "react";
+import { render } from "react-dom";
 import {
-	Container, Grid, Typography,
+	Container,
+	Grid,
+	Typography,
 	Button,
 	IconButton,
-	ButtonGroup,
 	TextField,
 	Card,
 	CardActions,
 	CardContent,
-} from '@material-ui/core';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/BorderColor';
-import PriorityIcon from '@mui/icons-material/DateRange';
+} from "@material-ui/core";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/BorderColor";
+import PriorityIcon from "@mui/icons-material/DateRange";
 
-import './style.scss';
+import "./style.scss";
+
+const primary = "#0c4767ff";
+const cardBg = "#A167A533";
+const dateColor = "#0c4767ff";
 
 const colorPriority = [
-	{priority: 'lowest', color: '#81c784'}, 
-	{priority: 'low', color: '#4fc3f7'}, 
-	{priority: 'medium', color: '#ffb74d'}, 
-	{priority: 'high', color: '#e57373'}
-]
+	{ priority: "lowest", color: "#81c784" },
+	{ priority: "low", color: "#4fc3f7" },
+	{ priority: "medium", color: "#ffb74d" },
+	{ priority: "high", color: "#e57373" },
+];
 
-const App = (props) => {
-		
+const App = () => {
 	const textFieldTodo = useRef(null);
 
 	const [rerender, setRerender] = useState(false);
-	
-	const [inputValue, setInputValue] = useState();
 	const [todoList, setTodoList] = useState([]);
 
-	const [isEditing, setIsEditing] = useState(false);
+	const [inputValue, setInputValue] = useState();
 	const [idToEdit, setIdToEdit] = useState();
-	
-	const handleAdd = (value) => {
-		if (value != "") {
-
-			// Set priority for how many ! are added at the start of the string, they remove them
-			let PriorityMarkCounter = 0
-			for (let i = 0; i < 3; i++) { if (value[i] === '!') { PriorityMarkCounter+=1 } }
-			value = value.substring(PriorityMarkCounter).trim();
-
-			const currentDate = new Date()
-			const newItem = { id: currentDate.getTime().toString(), 
-												title: value, 
-												priority: colorPriority[PriorityMarkCounter].priority,
-												color: colorPriority[PriorityMarkCounter].color, 
-												date: currentDate };
-
-			setTodoList([...todoList, newItem]);
-			textFieldTodo.current.value = '';
-			textFieldTodo.current.focus();
-		}
-	}
-
-	const handleEdit = (value) => {
-		setIsEditing(false);
-		const toDoToEdit = todoList.find(x => x.id === idToEdit);
-		toDoToEdit.title = value;
-		textFieldTodo.current.value = '';
-		textFieldTodo.current.focus();
-	}
+	const [isEditing, setIsEditing] = useState(false);
 
 	const handlePriority = (item) => {
-		let colorState = colorPriority.findIndex(x => x.priority === item.priority);
-		colorState = colorState > (colorPriority.length - 2) ? 0 : colorState + 1;
+		let colorState = colorPriority.findIndex(
+			(x) => x.priority === item.priority
+		);
+		colorState = colorState > colorPriority.length - 2 ? 0 : colorState + 1;
 		item.priority = colorPriority[colorState].priority;
 		item.color = colorPriority[colorState].color;
 		setRerender(!rerender);
-	}
+	};
+
+	const handleAdd = () => {
+		let currentValue = inputValue;
+		if (inputValue != "") {
+			// Set priority for how many ! are added at the start of the string, they remove them
+			let PriorityMarkCounter = 0;
+			for (let i = 0; i < 3; i++) {
+				if (currentValue[i] === "!") {
+					PriorityMarkCounter += 1;
+				}
+			}
+			currentValue = currentValue.substring(PriorityMarkCounter).trim();
+
+			const currentDate = new Date();
+			const newItem = {
+				id: currentDate.getTime().toString(),
+				title: currentValue,
+				priority: colorPriority[PriorityMarkCounter].priority,
+				color: colorPriority[PriorityMarkCounter].color,
+				date: currentDate,
+			};
+
+			setTodoList([...todoList, newItem]);
+			textFieldTodo.current.value = "";
+			textFieldTodo.current.focus();
+		}
+	};
+
+	const handleEdit = () => {
+		setIsEditing(false);
+		const toDoToEdit = todoList.find((x) => x.id === idToEdit);
+		toDoToEdit.title = inputValue;
+		textFieldTodo.current.value = "";
+	};
 
 	return (
 		<Container>
-
 			<Grid container spacing={2} justifyContent="center">
-
 				<Grid item xs={12}>
+					<TextField
+						style={{ width: "80%" }}
+						id="outlined-basic"
+						variant="outlined"
+						label={isEditing ? idToEdit + " - Edit ToDo" : "ToDo"}
+						inputRef={textFieldTodo}
+						onKeyPress={(e) => {
+							if (e.key === "Enter") {
+								isEditing ? handleEdit() : handleAdd();
+								textFieldTodo.current.value = "";
+							}
+						}}
+						onChange={(e) => {
+							setInputValue(e.currentTarget.value);
+						}}
+					/>
 
-					{ isEditing ?
-					
-					<>
-						<TextField style={ { width:'80%', height:50, } } variant="outlined"
-							id="outlined-basic" 
-							label= {idToEdit + " - Edit ToDo"} 
-							inputRef={ textFieldTodo }
-							onKeyPress={(e) => {
-								if (e.key === 'Enter') { 
-									handleEdit(inputValue);
-									e.currentTarget.value = '';
-								}
-							}}
-							onChange={(e) => { setInputValue(e.currentTarget.value) }} />
-
-						<Button variant="contained" style={ {width:'20%', height:'100%',} }
-							onClick={(e) => { handleEdit(inputValue); }}
-						>
-							Edit ToDo
-						</Button>
-					</>
-
-					:
-
-					<>
-						<TextField style={ { width:'80%', height:50, } } variant="outlined"
-						id="outlined-basic" 
-						label="ToDo" 
-						inputRef={ textFieldTodo }
-						onKeyPress={(e) => { if (e.key === 'Enter') { handleAdd(inputValue); } }}
-						onChange={(e) => { setInputValue(e.currentTarget.value) }} />
-
-						<Button variant="contained" style={ {width:'20%', height:'100%',} }
-							onClick={(e) => { handleAdd(inputValue); }}
-						>
-							Add ToDo
-						</Button>
-					</>
-					}
+					<Button
+						variant="contained"
+						style={{ width: "20%", height: "100%" }}
+						onClick={(e) => {
+							isEditing ? handleEdit() : handleAdd();
+						}}
+					>
+						{isEditing ? "Edit ToDo" : "Add ToDo"}
+					</Button>
 				</Grid>
 
 				<Grid item xs={12}>
+					<Grid container>
+						<Grid item xs={12} sm={6} md={4}>
+							<Button
+								style={{ width: "100%" }}
+								variant="contained"
+								onClick={(e) => {
+									todoList.sort((a, b) => b.date - a.date);
+									setRerender(!rerender);
+								}}
+							>
+								Filter by date
+							</Button>
+						</Grid>
+						<Grid item xs={12} sm={6} md={4}>
+							<Button
+								style={{ width: "100%" }}
+								variant="contained"
+								onClick={(e) => {
+									todoList.sort((a, b) => {
+										let bPriority = colorPriority.findIndex(
+											(x) => x.priority === b.priority
+										);
+										let aPriority = colorPriority.findIndex(
+											(x) => x.priority === a.priority
+										);
+										return bPriority > aPriority;
+									});
+									setRerender(!rerender);
+								}}
+							>
+								Filter by priority
+							</Button>
+						</Grid>
+					</Grid>
+				</Grid>
 
+				<Grid item xs={12}>
 					<Grid container spacing={2}>
-
-						{ todoList.map((item) => (
-							<Grid item xs={4}>
-								<Card sx={{ minWidth: 275 }}>
-
+						{todoList.map((item) => (
+							<Grid item xs={12} sm={6} md={3}>
+								<Card style={{ position: "relative", background: cardBg }}>
 									<CardContent>
-										{/* <Typography sx={{ fontSize: 14 }} style={{color:'#42a5f5'}} gutterBottom>
-											Todo num: { item.id }
-										</Typography> */}
 										<Typography variant="h5" component="div">
-											{ item.title }
+											{item.title}
 										</Typography>
 
-										<Typography sx={{ mb: 1.5 }} style={{color:'#81c784'}}>
-											Published: { item.date.getFullYear() + "/" +  item.date.getDate() + "/" +  item.date.getMonth() + " at " +  item.date.getHours() + "H" +  item.date.getMinutes()  }
+										<Typography style={{ color: dateColor }}>
+											{item.date.toLocaleDateString("en-GB", {
+												year: "numeric",
+												month: "2-digit",
+												day: "2-digit",
+											}) +
+												" at " +
+												item.date.toLocaleTimeString("en-GB", {
+													hour: "2-digit",
+													minute: "2-digit",
+												})}
 										</Typography>
 									</CardContent>
 
 									<CardActions disableSpacing>
-										<IconButton aria-label="Edit" style={{color:'#ffb74d'}} onClick={(e) => {
-											setIsEditing(true);
-											setIdToEdit(item.id);
-											textFieldTodo.current.focus();
-										}}>
+										<IconButton
+											title="Edit ToDo"
+											aria-label="Edit ToDo"
+											style={{ color: "#ffb74d" }}
+											onClick={(e) => {
+												setIsEditing(true);
+												setIdToEdit(item.id);
+												textFieldTodo.current.value = item.title;
+												textFieldTodo.current.focus();
+												textFieldTodo.current.select();
+											}}
+										>
 											<EditIcon />
 										</IconButton>
 
-										<IconButton aria-label="Delete" style={{color:'#d32f2f'}} onClick={(e) => {
+										<IconButton
+											title="Delete ToDo"
+											aria-label="Delete ToDo"
+											style={{ color: "#d32f2f" }}
+											onClick={(e) => {
 												setTodoList(todoList.filter((it) => it.id !== item.id));
-											}}>
+											}}
+										>
 											<DeleteIcon />
 										</IconButton>
-										
-										<IconButton aria-label="Priority" style={{backgroundColor: item.color}} onClick={(e) => {
+
+										<IconButton
+											title="Change priority"
+											aria-label="Change priority"
+											style={{
+												position: "absolute",
+												backgroundColor: item.color,
+												right: 0,
+												bottom: 0,
+												border: "2px",
+												borderStyle: "solid",
+												borderRadius: 0,
+											}}
+											onClick={(e) => {
 												handlePriority(item);
-											}}>
-											<PriorityIcon /> 
-											<Typography sx={{ mb: 1.5 }}>
-												{ item.priority.toUpperCase() }
+											}}
+										>
+											<PriorityIcon />
+											<Typography style={{ fontSize: "0.5em" }}>
+												{item.priority.toUpperCase()}
 											</Typography>
 										</IconButton>
 									</CardActions>
-
 								</Card>
 							</Grid>
 						))}
-
 					</Grid>
-					
 				</Grid>
-
 			</Grid>
 		</Container>
 	);
-
 };
 
 const appDiv = document.getElementById("app");
