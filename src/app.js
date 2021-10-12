@@ -39,6 +39,9 @@ const App = () => {
   const [idToEdit, setIdToEdit] = useState();
   const [isEditing, setIsEditing] = useState(false);
 
+  const getListToDisplay = () =>
+    foundTodos.length > 0 ? foundTodos : todoList;
+
   const handlePriority = (item) => {
     let colorState = colorPriority.findIndex(
       (x) => x.priority === item.priority
@@ -52,7 +55,7 @@ const App = () => {
   const handleAdd = () => {
     let currentValue = inputValue;
     if (inputValue != "") {
-      // Set priority for how many ! are added at the start of the string, they remove them
+      // Set priority for how many ! are added at the start of the string, then remove them from the final value
       let PriorityMarkCounter = 0;
       for (let i = 0; i < 3; i++) {
         if (currentValue[i] === "!") {
@@ -86,8 +89,12 @@ const App = () => {
     setInputValue("");
   };
 
-  const getListToDisplay = () =>
-    foundTodos.length > 0 ? foundTodos : todoList;
+  const handleDelete = (todo) => {
+    setTodoList(todoList.filter((it) => it.id !== todo.id));
+    if (foundTodos.length > 0)
+      // Also remove the element during search
+      setFoundTodos(foundTodos.filter((it) => it.id !== todo.id));
+  };
 
   return (
     <Container>
@@ -220,11 +227,7 @@ const App = () => {
                       title="Delete ToDo"
                       aria-label="Delete ToDo"
                       style={{ color: "#d32f2f" }}
-                      onClick={(e) => {
-                        setTodoList(
-                          getListToDisplay().filter((it) => it.id !== item.id)
-                        );
-                      }}
+                      onClick={(e) => handleDelete(item)}
                     >
                       <DeleteIcon />
                     </IconButton>
