@@ -1,24 +1,27 @@
-const path = require('path');
+const path = require("path");
+const Dotenv = require("dotenv-webpack");
 
 module.exports = {
-  entry: './src/app.js',
-  mode: 'development',
-	watch: true,
+  entry: "./src/app.js",
+  mode: "development",
+  watch: true,
 
   output: {
-    path: path.resolve('dist'),
-    filename: 'bundle.js'
+    path: path.resolve("dist"),
+    filename: "bundle.js",
   },
 
   resolve: {
-    extensions: ['.tsx', '.ts', '.js'],
+    extensions: [".tsx", ".ts", ".js"],
   },
-	
+
+  plugins: [new Dotenv()],
+
   module: {
     rules: [
-			{
+      {
         test: /\.tsx?$/,
-        use: 'ts-loader',
+        use: "ts-loader",
         exclude: /node_modules/,
       },
       {
@@ -27,9 +30,9 @@ module.exports = {
         use: {
           loader: "babel-loader",
           options: {
-            presets: ['@babel/preset-env']
-          }
-        }
+            presets: ["@babel/preset-env"],
+          },
+        },
       },
       {
         test: /\.s[ac]ss$/i,
@@ -43,7 +46,6 @@ module.exports = {
           "sass-loader",
         ],
       },
-    ]
+    ],
   },
-
 };
